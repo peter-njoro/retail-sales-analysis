@@ -1,4 +1,4 @@
-﻿"""
+"""
 Data Loading Script for Superstore Sales Analysis
 Loads CSV data into MySQL database, bypassing secure-file-priv restrictions
 
@@ -18,20 +18,30 @@ from mysql.connector import Error
 # =====================================================
 DB_CONFIG = {
     'host': 'localhost',
-    'user': 'root',               # Change to your MySQL username
-    'password': 'madeonearthbyhumans',  # Change to your MySQL password
-    'database': 'retail_sales' # Change to your database name
+    'user': 'root',
+    'password': 'madeonearthbyhumans',
+    'database': 'retail_analysis'
 }
 
-CSV_FILE_PATH = 'data/Sample_Superstore.csv'
+CSV_FILE_PATH = 'data/Sample_Superstore.csv' 
 
 # =====================================================
 # Load and Prepare Data
 # =====================================================
 print("Loading CSV file...")
 try:
-    df = pd.read_csv(CSV_FILE_PATH)
+    # Try cp1252 encoding first (common for Windows Excel exports)
+    df = pd.read_csv(CSV_FILE_PATH, encoding='cp1252')
     print(f"✓ Loaded {len(df)} rows")
+except UnicodeDecodeError:
+    try:
+        # Fallback to latin1 if cp1252 fails
+        print("  Trying alternate encoding...")
+        df = pd.read_csv(CSV_FILE_PATH, encoding='latin1')
+        print(f"✓ Loaded {len(df)} rows")
+    except Exception as e:
+        print(f"ERROR loading CSV with alternate encoding: {e}")
+        exit(1)
 except FileNotFoundError:
     print(f"ERROR: File not found at '{CSV_FILE_PATH}'")
     print("Please update CSV_FILE_PATH with the correct path to your CSV file")
